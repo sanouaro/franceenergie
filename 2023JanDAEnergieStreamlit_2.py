@@ -20,6 +20,8 @@ meteo_path_local = r"C:\Users\Brand\Downloads\_DataScientest\Project\France weat
 path_agg = r"fe_agg_day.csv"
 meteo_path = r"France weather data 2013-01-01 to 2020-12-31.csv"
 
+sarima_url = r"https://raw.githubusercontent.com/miraculix95/franceenergie/main/df_monthly_mean.csv"
+sarima_path = "df_monthly_mean.csv"
 
 # importation 
 
@@ -62,6 +64,13 @@ from sklearn.preprocessing import PolynomialFeatures
 import warnings
 warnings.filterwarnings('ignore')
 
+# Définir une palette de couleurs
+couleurs = {
+    "fond": "#f5f5f5",
+    "accent": "#1abc9c",
+    "texte": "#333333",
+    "texte_secondaire": "#777777"
+}
 
 #####################################################################################################################
 ######################################## Import + Traitement Données ################################################
@@ -92,6 +101,11 @@ def load_prepare_data():
 def load_meteo_data():
     france_city_meteo = pd.read_csv(meteo_path, sep = ",")
     return france_city_meteo
+
+@st.cache_data  # 👈 Add the caching decorator
+def load_data(url):
+    df_monthly_mean = pd.read_csv(url)
+    return df_monthly_mean
 
 @st.cache_data
 def aggregate_by_day(df):
@@ -138,9 +152,9 @@ X_trainS, X_testS = scaler(X_train, X_test)
 ### df = base de données pour tous les régions et chaque 30 minutes
 ### df_mois = based de données aggregé par jour et sur toutes les régions
 
-st.title('Projet Souverainité Énergétique')
-st.sidebar.title("Sommaire")
-pages = ["Intro", "Dataviz", "Modélisation - JDD", "Modélisation - Temperature", "Modélisation - Series Temporelle"]
+st.title('France Energie')
+st.sidebar.title("Navigation")
+pages = ["Intro", "Dataviz", "Modélisation - JDD", "Modélisation - Temperature", "Modélisation - SARIMA/X", "Credits"]
 page = st.sidebar.radio("Aller vers", pages)
 
 if page == pages[0]:
@@ -398,6 +412,96 @@ elif page == pages[3] :
         st.write("Récapitulatif de la régression pronominale quadratique:\n")
         st.write(model.summary())
 
+elif page == pages[4] :
+    df_monthly_mean = load_data(sarima_path)
+    if st.checkbox('Afficher les valeurs'):
+        st.dataframe(df_monthly_mean)
+    
+    order_options = ["SARIMA", "SARIMAX"]
+    order_selection = st.radio("Choissisez le modèle", order_options)
+
+   # Sélection des paramètres du modèle
+    st.write("## Sélection des paramètres du modèle")
+    p = st.slider("Ordre de l'autorégression (p)", min_value=0, max_value=10, value=1)
+    d = st.slider("Ordre de la différenciation (d)", min_value=0, max_value=10, value=1)
+    q = st.slider("Ordre de la moyenne mobile (q)", min_value=0, max_value=10, value=1)
+    P = st.slider("Ordre de l'autorégression saisonnière (P)", min_value=0, max_value=10, value=0)
+    D = st.slider("Ordre de la différenciation saisonnière (D)", min_value=0, max_value=10, value=1)
+    Q = st.slider("Ordre de la moyenne mobile saisonnière (Q)", min_value=0, max_value=10, value=0)
+    s = st.slider("Période saisonnière (s)", min_value=1, max_value=36, value=12)
+
+    st.button("Rerun")
+    
+    df_monthly_mean = np.log(df_monthly_mean)
+
+
+    if order_selection == "SARIMA": 
+        df_monthly_mean = df_monthly_mean.drop('Average',axis = 1)
+        # Créer le modèle SARIMA
+        modele = sm.tsa.SARIMAX(df_monthly_mean, order=(1,2,3), seasonal_order=(1,1,1,12))
+        sarima = modele.fit()
+    
+        # Entraînement du modèle SARIMA
+        model =sm.tsa.SARIMAX(df_monthly_mean, order=(p,d,q), seasonal_order=(P,D,Q,s), enforce_stationarity=False, enforce_invertibility=False,seasonal='mul')
+        results = model.fit()
+
+         # Prévisions avec curseur
+        st.write("## Prévisions")
+        start_index = st.slider("Index de départ", min_value=80, max_value=len(df_monthly_mean)-1, value=len(df_monthly_mean)-12)
+        end_index = st.slider("Index de fin", min_value=start_index, max_value=len(df_monthly_mean)+260, value=len(df_monthly_mean))
+        forecast = results.predict(start=start_index, end=end_index, dynamic=True)
+        data_with_forecast = df_monthly_mean.copy()
+        data_with_forecast['forecast'] = forecast
+
+    if order_selection == "SARIMAX":
+        # Convertir en une série temporelle
+        ts = df_monthly_mean['Consommation (MW)']
+
+        # Diviser les données en ensembles d'entraînement et de test
+        train_data = ts.iloc[:-12]
+        test_data = ts.iloc[-12:]
+
+        # Créer le modèle SARIMAX
+        modele = sm.tsa.SARIMAX(train_data,order = (1,2,3), seasonal_order= (1,1,1,12),exog =(df_monthly_mean['Average'].iloc[:-12]),seasonal='mul' )
+        sarima = modele.fit()
+
+
+        # Entraînement du modèle SARIMAX
+        modele =sm.tsa.SARIMAX(train_data, order=(p,d,q), seasonal_order=(P,D,Q,s), enforce_stationarity=False, enforce_invertibility=False,seasonal='mul',exog =(df_monthly_mean['Average'].iloc[:-12]))
+        results = modele.fit()
+
+
+        # Prévisions avec curseur
+        st.write("## Prévisions")
+        forecast = results.predict(start=80, end=120, dynamic=True,exog = df_monthly_mean['Average'].values.reshape(-1, 1)[:37])
+        df_monthly_mean2 = df_monthly_mean.drop('Average', axis = 1)
+        data_with_forecast = df_monthly_mean2.copy()
+        data_with_forecast['forecast'] = forecast
+        
+
+    # Affichage des paramètres du modèle
+    st.write("## Paramètres du modèle")
+    st.write(results.summary())
+
+    # Affichage du graphique de prévision
+    fig, ax = plt.subplots(figsize=(10,5))
+    df_monthly_mean.plot(ax=ax, label='Données observées')
+    forecast.plot(ax=ax, label='Prévisions', alpha=0.7)
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Valeur')
+    ax.set_title("Prévisions" + order_selection)
+    ax.legend()
+    st.pyplot(fig)
+
+elif page == pages[5] :
+    linkedin_url = 'https://www.linkedin.com/in/dr-bastian-brand-15a8946/'
+    st.markdown("Donovan Beaulavon")
+    st.markdown(f"<a href={linkedin_url}>Dr. Bastian Brand (lien LinkedIn)</a>", unsafe_allow_html=True)
+    st.markdown("Arnaud Guilhemsans")
+    st.markdown("Maria Massot")
+
+
+
 
 ### Next steps : Show table with data to see it has been correctly loaded - done
 ### make one of the regression functions work - done
@@ -406,34 +510,6 @@ elif page == pages[3] :
 ### incorporate hyperparameters - done
 ### improve execution speed - done
 ### incorporate interactivity - done
-
 ### incorporate the modelisation of the temperature - done
 ### check all the graphs
-
-
-### deploy in the Cloud / Github
-
-# creation données supplémentaires
-# df['Energie verte'] = df['Eolien (MW)']+df['Solaire (MW)']+df['Hydraulique (MW)']+df['Bioénergies (MW)']
-# df['Production totale'] = df['Thermique (MW)']+df['Nucléaire (MW)']-df['Pompage (MW)']+df['Eolien (MW)']+df['Solaire (MW)']+df['Hydraulique (MW)']+df['Bioénergies (MW)']
-# df["TCH Total"] = (df["TCH Thermique (%)"] + df["TCH Nucléaire (%)"] +
-#    df["TCH Eolien (%)"] + df["TCH Solaire (%)"] + df["TCH Hydraulique (%)"] +
-#    df["TCH Bioénergies (%)"])
-
-# données supplémentaires pour Anova
-# df['ConsommationMW'] = df['Consommation (MW)']
-# df['ProductionTotale'] = df['Production totale']
-# df['NucleaireMW'] = df['Nucléaire (MW)']
-# df['HydrauliqueMW'] = df['Hydraulique (MW)']
-# df['EnergieVerte'] = df['Energie verte']
-
-#suppression des colonnes créées pour Anova
-# df.drop(columns=['ConsommationMW','ProductionTotale','NucleaireMW', 'HydrauliqueMW',
-#                 'EnergieVerte'], inplace = True)
-
-# conversion Date en datetime - déjà fait
-# df["Date"] = pd.to_datetime(df["Date"])
-
-#suppression des colonnes autocorrélées
-# df =df.drop('Production totale', axis = 1)
-# df = df.drop('Energie verte', axis = 1)
+### deploy in the Cloud / Github - done
