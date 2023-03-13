@@ -46,7 +46,9 @@ import streamlit as st
 import seaborn as sns 
 import matplotlib.pyplot as plt 
 import plotly.express as px
+import requests
 import io
+from PIL import Image
 
 from sklearn.model_selection import train_test_split
 
