@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import requests
 import io
+from io import BytesIO
 from PIL import Image
 
 from sklearn.model_selection import train_test_split
