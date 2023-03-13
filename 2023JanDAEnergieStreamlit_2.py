@@ -23,6 +23,21 @@ meteo_path = r"France weather data 2013-01-01 to 2020-12-31.csv"
 sarima_url = r"https://raw.githubusercontent.com/miraculix95/franceenergie/main/df_monthly_mean.csv"
 sarima_path = "df_monthly_mean.csv"
 
+graph_serie_temp_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_serie_temp.png"
+graph_serie_temp = Image.open(BytesIO(requests.get(graph_serie_temp_url).content))
+
+graph_trendsesonresid_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_trend%26seson%26resid.png"
+graph_trendsesonresid = Image.open(BytesIO(requests.get(graph_trendsesonresid_url).content))
+
+plot_diagno_url = "https://github.com/miraculix95/franceenergie/raw/main/plot_diagno.png"
+plot_diagno = Image.open(BytesIO(requests.get(plot_diagno_url).content))
+
+pred_sarimax_url = "https://github.com/miraculix95/franceenergie/raw/main/pred_sarimax.png"
+pred_sarimax = Image.open(BytesIO(requests.get(pred_sarimax_url).content))
+
+
+
+
 # importation 
 
 import pandas as pd 
@@ -413,6 +428,16 @@ elif page == pages[3] :
         st.write(model.summary())
 
 elif page == pages[4] :
+    
+    if st.checkbox('Afficher la courbe de consommation mensuel'):
+        st.image(graph_serie_temp, caption='Graph Serie Temp')
+    if st.checkbox('Afficher le graphique combiné de la décomposition de la tendance et de la saisonnalité '):
+        st.image(graph_trendsesonresid, caption='Graph Trend, Seasonality, and Residuals')
+    if st.checkbox('Afficher les plot de diagnostique du modele'):
+        st.image(plot_diagno, caption='Diagnostic Plot')
+    if st.checkbox('Afficher les predictions'):
+        st.image(pred_sarimax, caption='SARIMAX Forecast')
+    
     df_monthly_mean = load_data(sarima_path)
     if st.checkbox('Afficher les valeurs'):
         st.dataframe(df_monthly_mean)
