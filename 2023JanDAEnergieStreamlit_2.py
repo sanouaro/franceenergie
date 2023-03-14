@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu March 09 11:33:29 2023
-
 @author: France Energie Team 
 """
 #####################################################################################################################
@@ -54,30 +53,37 @@ warnings.filterwarnings('ignore')
 
 # paths
 
-path = r"C:\Users\Brand\Downloads\_DataScientest\Scripts\Project\eco2mix-regional-cons-def.csv"
-path_orig = r"C:\Users\Anwender\Downloads\eco2mix-regional-cons-def.csv"
-path_url =r"https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-regional-cons-def/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B"
+# path = r"C:\Users\Brand\Downloads\_DataScientest\Scripts\Project\eco2mix-regional-cons-def.csv"
+# path_orig = r"C:\Users\Anwender\Downloads\eco2mix-regional-cons-def.csv"
+# path_url =r"https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-regional-cons-def/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B"
 
-path_agg_local = r"C:\Users\Brand\Downloads\_DataScientest\Scripts\Project\fe_agg_day.csv"
-meteo_path_local = r"C:\Users\Brand\Downloads\_DataScientest\Project\France weather data 2013-01-01 to 2020-12-31.csv"
+# path_agg_local = r"C:\Users\Brand\Downloads\_DataScientest\Scripts\Project\fe_agg_day.csv"
+# meteo_path_local = r"C:\Users\Brand\Downloads\_DataScientest\Project\France weather data 2013-01-01 to 2020-12-31.csv"
+# meteo_path = r"France weather data 2013-01-01 to 2020-12-31.csv"
 
-path_agg = r"fe_agg_day.csv"
-meteo_path = r"France weather data 2013-01-01 to 2020-12-31.csv"
+# sarima_url = r"https://raw.githubusercontent.com/miraculix95/franceenergie/main/df_monthly_mean.csv"
 
-sarima_url = r"https://raw.githubusercontent.com/miraculix95/franceenergie/main/df_monthly_mean.csv"
-sarima_path = "df_monthly_mean.csv"
+# graph_serie_temp_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_serie_temp.png"
+# graph_serie_temp = Image.open(BytesIO(requests.get(graph_serie_temp_url).content))
+graph_serie_temp = "graph_serie_temp.png"
 
-graph_serie_temp_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_serie_temp.png"
-graph_serie_temp = Image.open(BytesIO(requests.get(graph_serie_temp_url).content))
+# graph_trendsesonresid_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_trend%26seson%26resid.png"
+# graph_trendsesonresid = Image.open(BytesIO(requests.get(graph_trendsesonresid_url).content))
+graph_trendsesonresid = "graph_trend&seson&resid.png"
 
-graph_trendsesonresid_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_trend%26seson%26resid.png"
-graph_trendsesonresid = Image.open(BytesIO(requests.get(graph_trendsesonresid_url).content))
+# plot_diagno_url = "https://github.com/miraculix95/franceenergie/raw/main/plot_diagno.png"
+# plot_diagno = Image.open(BytesIO(requests.get(plot_diagno_url).content))
+plot_diagno = "plot_diagno.png"
 
-plot_diagno_url = "https://github.com/miraculix95/franceenergie/raw/main/plot_diagno.png"
-plot_diagno = Image.open(BytesIO(requests.get(plot_diagno_url).content))
+# pred_sarimax_url = "https://github.com/miraculix95/franceenergie/raw/main/pred_sarimax.png"
+# pred_sarimax = Image.open(BytesIO(requests.get(pred_sarimax_url).content))
+pred_sarimax = "pred_sarimax.png"
 
-pred_sarimax_url = "https://github.com/miraculix95/franceenergie/raw/main/pred_sarimax.png"
-pred_sarimax = Image.open(BytesIO(requests.get(pred_sarimax_url).content))
+# modelisation_apercu_url = "https://github.com/miraculix95/franceenergie/raw/main/modelisation.PNG"
+# modelisation_apercu = Image.open(BytesIO(requests.get(modelisation_apercu_url).content))
+
+# modelisation_next_steps_url = "https://github.com/miraculix95/franceenergie/raw/main/next_steps.PNG"
+# modelisation_next_steps = Image.open(BytesIO(requests.get(modelisation_next_steps_url).content))
 
 # Définir une palette de couleurs
 couleurs = {
@@ -91,48 +97,38 @@ couleurs = {
 ######################################## Import + Traitement Données ################################################
 #####################################################################################################################
 
+# Loading the energy data
+path_agg = r"fe_agg_day.csv"
 @st.cache_data
-def load_prepare_data():
-    ### Importation des données
-    dfx = pd.read_csv(path, sep=';', index_col=0)
-    # dfx = pd.read_csv(path_url, sep=';') # takes way too long
-    
-    # données supplémentaires
-    dfx['Date'] = pd.to_datetime(dfx['Date'])
-    dfx['Année']=dfx['Date'].dt.year
-    dfx['Mois']=dfx['Date'].dt.month
-    # suppression des données
-    dfx = dfx[(dfx['Année'] != 2021) &(dfx['Année'] != 2022)]
-    dfx.drop(columns=['Nature','Column 30','Date - Heure', 'Stockage batterie','Déstockage batterie','Eolien terrestre', 'Eolien offshore', 'TCO Thermique (%)','TCO Nucléaire (%)','TCO Eolien (%)','TCO Solaire (%)','TCO Hydraulique (%)','TCO Bioénergies (%)'], inplace=True)
-    # Correction MW  MWh
-    columnnum = len(dfx.columns)-2
-    dfx.iloc[:, 4:columnnum] = dfx.iloc[:, 4:columnnum] / 2
-    # traitement données manquantes
-    medians = dfx.median()
-    dfx = dfx.fillna(medians)
-    return dfx
+def load_energy_data():
+    return pd.read_csv(path_agg, sep=';', index_col=0)
 
+# Loading the meteo data
+meteo_path = r"France weather data 2013-01-01 to 2020-12-31.csv"
 @st.cache_data
 def load_meteo_data():
     france_city_meteo = pd.read_csv(meteo_path, sep = ",")
     return france_city_meteo
 
+# Loading the data for SARIMAX
+sarima_path = "df_monthly_mean.csv"
 @st.cache_data  # 👈 Add the caching decorator
 def load_data(url):
     df_monthly_mean = pd.read_csv(url)
     return df_monthly_mean
 
+# Not used anymore
 @st.cache_data
 def aggregate_by_day(df):
     return df.groupby(['Date'], as_index=False).sum()
 
+# Used for the preparation of the training set and test set
 @st.cache_data
 def scaler(X_train, X_test):
     sc = StandardScaler()
     X_trainS = sc.fit_transform(X_train)
     X_testS = sc.transform(X_test)
     return X_trainS, X_testS 
-
 
 
 
@@ -147,7 +143,7 @@ def scaler(X_train, X_test):
 # df_jour = aggregate_by_day(df)  #commented out because now using preprocessed data
 
 # Loading of preprocessed data
-df_jour = pd.read_csv(path_agg, sep=';', index_col=0)
+df_jour = load_energy_data()
 
 #Definition des variable categorielle et numerique
 df_cat = df_jour.select_dtypes(include=['object'])
@@ -169,14 +165,26 @@ X_trainS, X_testS = scaler(X_train, X_test)
 
 st.title('France Energie')
 st.sidebar.title("Navigation")
-pages = ["Intro", "Dataviz", "Modélisation - JDD", "Modélisation - Temperature", "Modélisation - SARIMA/X", "Credits"]
+pages = ["Intro", "Modélisation - Apercu", "Modélisation - JDD", "Modélisation - Temperature", "Modélisation - SARIMA/X", "Modélisation - Next Steps", "Credits"]
 page = st.sidebar.radio("Aller vers", pages)
 
 if page == pages[0]:
     st.title("Introduction")
-    st.write("Energie")
+    st.write(" \
+            Black-out - le mot qui revient dans le discours quotidien de plus en plus souvent. Nous constatons \
+            une augmentation de la demande énergétique, qui s’est davantage accentuée ces dernières années. \
+            La société évolue vers un modèle plus numérique, qui permet une connectivité interpersonnelle avec \
+            un niveau de technologie encore jamais atteint dans notre histoire, au prix d'une consommation \
+            énergétique toujours plus importante. Une panne d’énergie non-maitrisée pourrait introduire des \
+            perturbations graves au niveau publique comme au niveau individuel. \
+            Vous trouverez sur ce site des calculs d'apprentissage automatique qui ont été créés au cours de la \
+            formation Datascientest January 2023 Bootcamp - Project Group French Energy. Les ensembles de données \
+            sur la consommation d'énergie et la production française utilisés proviennent d'Eco2Mix, les données \
+            météorologiques proviennent de Visualcrossing.com. \
+            Vous trouverez ci-dessous un aperçu des données énergétiques qui constituent la base de cette étude. \
+            ")
     st.image("energie.jpg", use_column_width=True)
-    st.write("Non-aggregated dataframe")
+    #st.write("Non-aggregated dataframe")
     #st.dataframe(df.head())
     
     st.write("Aggregated dataframe")
@@ -186,23 +194,24 @@ if page == pages[0]:
     #    st.dataframe(df.isna().sum())
 
 elif page == pages[1]:
-    st.title("Data Visualisation")
-
-    fig = plt.figure()
-    #sns.boxplot(x = "Mois", y="", data = df_jour)
-    df_jour["yMonth"] = df_jour["Année"] + df_jour["Mois"]/12
-    df_mois = df_jour.groupby(["yMonth"]).sum()
-    plt.plot(df_mois.index, df_mois["Solaire (MW)"])
-    plt.title("Dévelopement de l'énergie solaire")
-    plt.xlabel("Temps")
-    plt.ylabel("Production MWh Mensuelle")
-    st.pyplot(fig)
+    st.title("Modélisation Apercu")
+    st.image("modelisation.PNG", caption='Apercu')
+    
+    # st.title("Data Visualisation")
+    # fig = plt.figure()
+    # #sns.boxplot(x = "Mois", y="", data = df_jour)
+    # df_jour["yMonth"] = df_jour["Année"] + df_jour["Mois"]/12
+    # df_mois = df_jour.groupby(["yMonth"]).sum()
+    # plt.plot(df_mois.index, df_mois["Solaire (MW)"])
+    # plt.title("Dévelopement de l'énergie solaire")
+    # plt.xlabel("Temps")
+    # plt.ylabel("Production MWh Mensuelle")
+    # st.pyplot(fig)
 
 
 elif page == pages[2] : 
-    
-    st.write("Modélisation")
-    
+    st.title("Modélisation - données jdd")
+      
     model_choisi = st.selectbox(label = "Choix de mon modèle", options = ['Linear Regression', 'RidgeCV', 'Lasso', 'Decision Tree', 'Random Forest'])
 
     if model_choisi == 'Linear Regression' :
@@ -229,16 +238,18 @@ elif page == pages[2] :
 
         # Évaluer les performances du modèle
         st.markdown('**Train**')
-        st.write('Coefficient de détermination du modèle:', round(regressor.score(X_trainS, y_train),2))
-        st.write('Mean_squared_error:', round(mean_squared_error(y_pred_train, y_train),2))
-        st.write("Mean absolute error: ", round(mean_absolute_error(y_pred_train, y_train),2))
-        st.write("R-squared: ", round(r2_score(y_train, y_pred_train),2))
+        st.write('Coefficient de détermination du modèle:', round(regressor.score(X_trainS, y_train),2),
+                 "R-squared: ", round(r2_score(y_train, y_pred_train),2))
+        st.write('Mean_squared_error:', round(mean_squared_error(y_pred_train, y_train),2),
+                 "Mean absolute error: ", round(mean_absolute_error(y_pred_train, y_train),2))
+        #st.write("R-squared: ", round(r2_score(y_train, y_pred_train),2))
 
         st.markdown('**Test**')
-        st.write('Coefficient de détermination du modèle:', round(regressor.score(X_testS, y_test),2))
-        st.write('Mean_squared_error:', round(mean_squared_error(y_pred_test, y_test),2))
-        st.write("Mean absolute error: ", round(mean_absolute_error(y_pred_test, y_test),2))
-        st.write("R-squared: ", round(r2_score(y_test, y_pred_test),2))
+        st.write('Coefficient de détermination du modèle:', round(regressor.score(X_testS, y_test),2),
+                 "R-squared: ", round(r2_score(y_test, y_pred_test),2))
+        st.write('Mean_squared_error:', round(mean_squared_error(y_pred_test, y_test),2),
+                 "Mean absolute error: ", round(mean_absolute_error(y_pred_test, y_test),2))
+        #st.write("R-squared: ", round(r2_score(y_test, y_pred_test),2))
 
     
         # Coefficients si régression linéaire
@@ -337,21 +348,23 @@ elif page == pages[2] :
 
 
 elif page == pages[3] :
-    #st.write("Temperature")
-    order_options = ["Lineaire", "Polynomiale"]
-    order_selection = st.radio("Ordre de la regréssion", order_options)
+    st.title("Régression Conso - Temperature")
 
-    ### loading the meteorological data
+     ### loading the meteorological data
     france_city_meteo = load_meteo_data()
     france_city_meteo.datetime = pd.to_datetime(france_city_meteo.datetime)
     france_city_meteo = france_city_meteo.set_index("datetime")
 
     ### Info
-    if st.checkbox('Information sur les données'):
+    if st.checkbox('Information sur les données méteos'):
         buffer = io.StringIO()
         france_city_meteo.info(buf=buffer)
         st.text(buffer.getvalue())
         st.dataframe(france_city_meteo.head(), use_container_width = True)
+    #st.write("Temperature")
+    
+    order_options = ["Lineaire", "Polynomiale"]
+    order_selection = st.radio("Ordre de la regréssion", order_options)
 
     ### dfs separés par ville
     france_city_meteo["month"] = france_city_meteo.index.month
@@ -428,6 +441,7 @@ elif page == pages[3] :
         st.write(model.summary())
 
 elif page == pages[4] :
+    st.title("SARIMA/X")
     
     if st.checkbox('Afficher la courbe de consommation mensuel'):
         st.image(graph_serie_temp, caption='Graph Serie Temp')
@@ -519,11 +533,18 @@ elif page == pages[4] :
     st.pyplot(fig)
 
 elif page == pages[5] :
+    st.title("Modélisation - Next Steps")
+    st.image("next_steps.PNG", caption='Apercu')
+
+
+elif page == pages[6] :
     linkedin_url = 'https://www.linkedin.com/in/dr-bastian-brand-15a8946/'
-    st.markdown("Donovan Beaulavon")
-    st.markdown(f"<a href={linkedin_url}>Dr. Bastian Brand (lien LinkedIn)</a>", unsafe_allow_html=True)
-    st.markdown("Arnaud Guilhemsans")
-    st.markdown("Maria Massot")
+    st.title("Team")
+    st.markdown(f"<a href={'mailto:donovan.beaulavon@gmail.com'}>Donovan Beaulavon (lien email)</a>", unsafe_allow_html=True)
+    st.markdown(f"<a href={'https://www.linkedin.com/in/dr-bastian-brand-15a8946/'}>Dr. Bastian Brand (lien LinkedIn)</a>", unsafe_allow_html=True)
+    st.markdown(f"<a href={'mailto:a.guilhemsans@gmail.com'}>Arnaud Guihemsans (lien email)</a>", unsafe_allow_html=True)
+    st.markdown(f"<a href={'https://www.linkedin.com/in/maria-massot/'}>Maria Massot (lien LinkedIn)</a>", unsafe_allow_html=True)
+    st.markdown("Special thanks to Manon for the support!")
 
 
 
@@ -538,3 +559,27 @@ elif page == pages[5] :
 ### incorporate the modelisation of the temperature - done
 ### check all the graphs
 ### deploy in the Cloud / Github - done
+
+
+### Out
+
+# @st.cache_data
+# def load_prepare_data():
+#     ### Importation des données
+#     dfx = pd.read_csv(path, sep=';', index_col=0)
+#     # dfx = pd.read_csv(path_url, sep=';') # takes way too long
+    
+#     # données supplémentaires
+#     dfx['Date'] = pd.to_datetime(dfx['Date'])
+#     dfx['Année']=dfx['Date'].dt.year
+#     dfx['Mois']=dfx['Date'].dt.month
+#     # suppression des données
+#     dfx = dfx[(dfx['Année'] != 2021) &(dfx['Année'] != 2022)]
+#     dfx.drop(columns=['Nature','Column 30','Date - Heure', 'Stockage batterie','Déstockage batterie','Eolien terrestre', 'Eolien offshore', 'TCO Thermique (%)','TCO Nucléaire (%)','TCO Eolien (%)','TCO Solaire (%)','TCO Hydraulique (%)','TCO Bioénergies (%)'], inplace=True)
+#     # Correction MW  MWh
+#     columnnum = len(dfx.columns)-2
+#     dfx.iloc[:, 4:columnnum] = dfx.iloc[:, 4:columnnum] / 2
+#     # traitement données manquantes
+#     medians = dfx.median()
+#     dfx = dfx.fillna(medians)
+#     return dfx
