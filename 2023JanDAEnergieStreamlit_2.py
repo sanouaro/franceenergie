@@ -56,34 +56,28 @@ warnings.filterwarnings('ignore')
 # path = r"C:\Users\Brand\Downloads\_DataScientest\Scripts\Project\eco2mix-regional-cons-def.csv"
 # path_orig = r"C:\Users\Anwender\Downloads\eco2mix-regional-cons-def.csv"
 # path_url =r"https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-regional-cons-def/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B"
-
 # path_agg_local = r"C:\Users\Brand\Downloads\_DataScientest\Scripts\Project\fe_agg_day.csv"
 # meteo_path_local = r"C:\Users\Brand\Downloads\_DataScientest\Project\France weather data 2013-01-01 to 2020-12-31.csv"
 # meteo_path = r"France weather data 2013-01-01 to 2020-12-31.csv"
-
 # sarima_url = r"https://raw.githubusercontent.com/miraculix95/franceenergie/main/df_monthly_mean.csv"
-
 # graph_serie_temp_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_serie_temp.png"
 # graph_serie_temp = Image.open(BytesIO(requests.get(graph_serie_temp_url).content))
-graph_serie_temp = "graph_serie_temp.png"
-
 # graph_trendsesonresid_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_trend%26seson%26resid.png"
 # graph_trendsesonresid = Image.open(BytesIO(requests.get(graph_trendsesonresid_url).content))
-graph_trendsesonresid = "graph_trend&seson&resid.png"
-
 # plot_diagno_url = "https://github.com/miraculix95/franceenergie/raw/main/plot_diagno.png"
 # plot_diagno = Image.open(BytesIO(requests.get(plot_diagno_url).content))
-plot_diagno = "plot_diagno.png"
-
 # pred_sarimax_url = "https://github.com/miraculix95/franceenergie/raw/main/pred_sarimax.png"
 # pred_sarimax = Image.open(BytesIO(requests.get(pred_sarimax_url).content))
-pred_sarimax = "pred_sarimax.png"
-
 # modelisation_apercu_url = "https://github.com/miraculix95/franceenergie/raw/main/modelisation.PNG"
 # modelisation_apercu = Image.open(BytesIO(requests.get(modelisation_apercu_url).content))
-
 # modelisation_next_steps_url = "https://github.com/miraculix95/franceenergie/raw/main/next_steps.PNG"
 # modelisation_next_steps = Image.open(BytesIO(requests.get(modelisation_next_steps_url).content))
+
+
+graph_serie_temp = "graph_serie_temp.png"
+graph_trendsesonresid = "graph_trend&seson&resid.png"
+plot_diagno = "plot_diagno.png"
+pred_sarimax = "pred_sarimax.png"
 
 # Définir une palette de couleurs
 couleurs = {
