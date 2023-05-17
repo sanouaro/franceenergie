@@ -9,17 +9,16 @@ Created on Thu March 09 11:33:29 2023
 
 # importation 
 
+# Modules for data processing
 import pandas as pd 
 import numpy as np 
+
+# Modules for output
 import streamlit as st 
 import seaborn as sns 
 import matplotlib.pyplot as plt 
-import plotly.express as px
-import requests
-import io
-from io import BytesIO
-from PIL import Image
 
+# Modules for preparation and fitting of machine learning
 from sklearn.model_selection import train_test_split
 
 from sklearn.tree import DecisionTreeClassifier
@@ -35,45 +34,22 @@ from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import RidgeCV
 from sklearn.linear_model import Lasso
 
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.seasonal import seasonal_decompose
-from statsmodels.tsa.stattools import adfuller
-
+# Modules to calculate statistics for machine learning 
 import sklearn.metrics
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
 
+# Modules for SARIMAX and temperature regressions 
 import statsmodels.api as sm
 from sklearn.preprocessing import PolynomialFeatures
 
-
+# Other imports
+import io #special use to show df.info()
 import warnings
 warnings.filterwarnings('ignore')
 
-# paths
-
-# path = r"C:\Users\Brand\Downloads\_DataScientest\Scripts\Project\eco2mix-regional-cons-def.csv"
-# path_orig = r"C:\Users\Anwender\Downloads\eco2mix-regional-cons-def.csv"
-# path_url =r"https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-regional-cons-def/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B"
-# path_agg_local = r"C:\Users\Brand\Downloads\_DataScientest\Scripts\Project\fe_agg_day.csv"
-# meteo_path_local = r"C:\Users\Brand\Downloads\_DataScientest\Project\France weather data 2013-01-01 to 2020-12-31.csv"
-# meteo_path = r"France weather data 2013-01-01 to 2020-12-31.csv"
-# sarima_url = r"https://raw.githubusercontent.com/miraculix95/franceenergie/main/df_monthly_mean.csv"
-# graph_serie_temp_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_serie_temp.png"
-# graph_serie_temp = Image.open(BytesIO(requests.get(graph_serie_temp_url).content))
-# graph_trendsesonresid_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_trend%26seson%26resid.png"
-# graph_trendsesonresid = Image.open(BytesIO(requests.get(graph_trendsesonresid_url).content))
-# plot_diagno_url = "https://github.com/miraculix95/franceenergie/raw/main/plot_diagno.png"
-# plot_diagno = Image.open(BytesIO(requests.get(plot_diagno_url).content))
-# pred_sarimax_url = "https://github.com/miraculix95/franceenergie/raw/main/pred_sarimax.png"
-# pred_sarimax = Image.open(BytesIO(requests.get(pred_sarimax_url).content))
-# modelisation_apercu_url = "https://github.com/miraculix95/franceenergie/raw/main/modelisation.PNG"
-# modelisation_apercu = Image.open(BytesIO(requests.get(modelisation_apercu_url).content))
-# modelisation_next_steps_url = "https://github.com/miraculix95/franceenergie/raw/main/next_steps.PNG"
-# modelisation_next_steps = Image.open(BytesIO(requests.get(modelisation_next_steps_url).content))
-
-
+# File links
 graph_serie_temp = "graph_serie_temp.png"
 graph_trendsesonresid = "graph_trend&seson&resid.png"
 plot_diagno = "plot_diagno.png"
@@ -111,11 +87,6 @@ def load_data(url):
     df_monthly_mean = pd.read_csv(url)
     return df_monthly_mean
 
-# Not used anymore
-@st.cache_data
-def aggregate_by_day(df):
-    return df.groupby(['Date'], as_index=False).sum()
-
 # Used for the preparation of the training set and test set
 @st.cache_data
 def scaler(X_train, X_test):
@@ -127,16 +98,11 @@ def scaler(X_train, X_test):
 
 
 #####################################################################################################################
-######################################## Création des testsets ######################################################
+######################################## Importation + Création des testsets ########################################
 #####################################################################################################################
 
 
-# function to load data
-# df = load_prepare_data() #commented out because now using preprocessed data
-# aggregation actually by day not by month (all of france gets summed up)
-# df_jour = aggregate_by_day(df)  #commented out because now using preprocessed data
-
-# Loading of preprocessed data
+# Loading of preprocessed data - daily energy data 
 df_jour = load_energy_data()
 
 #Definition des variable categorielle et numerique
@@ -152,10 +118,6 @@ X_trainS, X_testS = scaler(X_train, X_test)
 #####################################################################################################################
 ######################################## Streamlit  #################################################################
 #####################################################################################################################
-
-### variables disponibles
-### df = base de données pour tous les régions et chaque 30 minutes
-### df_mois = based de données aggregé par jour et sur toutes les régions
 
 st.title('France Energie')
 st.sidebar.title("Navigation")
@@ -178,31 +140,16 @@ if page == pages[0]:
             Vous trouverez ci-dessous un aperçu des données énergétiques qui constituent la base de cette étude. \
             ")
     st.image("energie.jpg", use_column_width=True)
-    #st.write("Non-aggregated dataframe")
-    #st.dataframe(df.head())
-    
+     
     st.write("Aggregated dataframe")
     st.dataframe(df_jour.head())
           
-    # if st.checkbox('Afficher les valeurs manquantes'):
-    #    st.dataframe(df.isna().sum())
-
+ 
 elif page == pages[1]:
     st.title("Modélisation Apercu")
     st.image("modelisation.PNG", caption='Apercu')
     
-    # st.title("Data Visualisation")
-    # fig = plt.figure()
-    # #sns.boxplot(x = "Mois", y="", data = df_jour)
-    # df_jour["yMonth"] = df_jour["Année"] + df_jour["Mois"]/12
-    # df_mois = df_jour.groupby(["yMonth"]).sum()
-    # plt.plot(df_mois.index, df_mois["Solaire (MW)"])
-    # plt.title("Dévelopement de l'énergie solaire")
-    # plt.xlabel("Temps")
-    # plt.ylabel("Production MWh Mensuelle")
-    # st.pyplot(fig)
-
-
+ 
 elif page == pages[2] : 
     st.title("Modélisation - données jdd")
       
@@ -393,7 +340,7 @@ elif page == pages[3] :
     df_x_ymonth = pd.concat([df_x_ymonth, df_mconsumption], axis=1)
  
     if order_selection == "Lineaire":
-        # graph
+        # draw graph
         plt.figure(figsize=(6,6));
         fig = sns.lmplot(x="Average", y="Consommation (MW)", data=df_x_ymonth, fit_reg = True, height=10, aspect=1);
         plt.xlabel("Température moyenne journalière");
@@ -401,14 +348,14 @@ elif page == pages[3] :
         plt.title("Temperature Consommation Régression Linéaire");
         st.pyplot(fig)
 
-        # statistiques
+        # calculate and show statistiques
         model = sm.OLS(df_x_ymonth["Consommation (MW)"], df_x_ymonth.Average).fit()
-        ypred = model.predict(df_x_ymonth.Average) 
+        ypred = model.predict(df_x_ymonth.Average)  #not clear if necessary
         st.write("Récapitulatif régression linéaire: \n")
         st.write(model.summary())
 
     if order_selection == "Polynomiale":
-        # graph
+        # draw graph
         order_degree = st.slider("Polynomal-Degree", min_value=2, max_value=20, value=2)
         plt.figure(figsize=(6,6));
         fig = sns.lmplot(x="Average", y="Consommation (MW)", data=df_x_ymonth, fit_reg = True, order = order_degree, height=10, aspect=1);
@@ -418,19 +365,17 @@ elif page == pages[3] :
         st.pyplot(fig)
 
         # quadratic regression
-
         # reshaping necessary see link below  https://stackoverflow.com/questions/51150153/valueerror-expected-2d-array-got-1d-array-instead
+        # information  https://towardsdatascience.com/polynomial-regression-in-python-dd655a7d9f2b
         X = np.array(df_x_ymonth.Average).reshape(-1, 1)
 
-        from sklearn.preprocessing import PolynomialFeatures
+        # from sklearn.preprocessing import PolynomialFeatures
         poly2 = PolynomialFeatures(degree= order_degree, include_bias=False)
         xp = poly2.fit_transform(X)
 
-        # information  https://towardsdatascience.com/polynomial-regression-in-python-dd655a7d9f2b
-
+        # calculate and show statistiques
         model = sm.OLS(df_x_ymonth["Consommation (MW)"], xp).fit()
-        ypred = model.predict(xp) 
-
+        ypred = model.predict(xp) #not clear if necessary
         st.write("Récapitulatif de la régression pronominale quadratique:\n")
         st.write(model.summary())
 
@@ -542,6 +487,42 @@ elif page == pages[6] :
 
 
 
+# Unused - intended to be used to load pictures
+# import requests #not use
+# from io import BytesIO
+# from PIL import Image
+
+# Not used anymore (DB) 
+# import plotly.express as px
+# from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+# from statsmodels.tsa.seasonal import seasonal_decompose
+# from statsmodels.tsa.stattools import adfuller
+
+
+
+# paths
+
+# path = r"C:\Users\Brand\Downloads\_DataScientest\Scripts\Project\eco2mix-regional-cons-def.csv"
+# path_orig = r"C:\Users\Anwender\Downloads\eco2mix-regional-cons-def.csv"
+# path_url =r"https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-regional-cons-def/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B"
+# path_agg_local = r"C:\Users\Brand\Downloads\_DataScientest\Scripts\Project\fe_agg_day.csv"
+# meteo_path_local = r"C:\Users\Brand\Downloads\_DataScientest\Project\France weather data 2013-01-01 to 2020-12-31.csv"
+# meteo_path = r"France weather data 2013-01-01 to 2020-12-31.csv"
+# sarima_url = r"https://raw.githubusercontent.com/miraculix95/franceenergie/main/df_monthly_mean.csv"
+# graph_serie_temp_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_serie_temp.png"
+# graph_serie_temp = Image.open(BytesIO(requests.get(graph_serie_temp_url).content))
+# graph_trendsesonresid_url = "https://github.com/miraculix95/franceenergie/raw/main/graph_trend%26seson%26resid.png"
+# graph_trendsesonresid = Image.open(BytesIO(requests.get(graph_trendsesonresid_url).content))
+# plot_diagno_url = "https://github.com/miraculix95/franceenergie/raw/main/plot_diagno.png"
+# plot_diagno = Image.open(BytesIO(requests.get(plot_diagno_url).content))
+# pred_sarimax_url = "https://github.com/miraculix95/franceenergie/raw/main/pred_sarimax.png"
+# pred_sarimax = Image.open(BytesIO(requests.get(pred_sarimax_url).content))
+# modelisation_apercu_url = "https://github.com/miraculix95/franceenergie/raw/main/modelisation.PNG"
+# modelisation_apercu = Image.open(BytesIO(requests.get(modelisation_apercu_url).content))
+# modelisation_next_steps_url = "https://github.com/miraculix95/franceenergie/raw/main/next_steps.PNG"
+# modelisation_next_steps = Image.open(BytesIO(requests.get(modelisation_next_steps_url).content))
+
+
 
 ### Next steps : Show table with data to see it has been correctly loaded - done
 ### make one of the regression functions work - done
@@ -553,7 +534,6 @@ elif page == pages[6] :
 ### incorporate the modelisation of the temperature - done
 ### check all the graphs
 ### deploy in the Cloud / Github - done
-
 
 ### Out
 
