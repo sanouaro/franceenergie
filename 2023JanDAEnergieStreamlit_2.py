@@ -126,19 +126,19 @@ page = st.sidebar.radio("Aller vers", pages)
 
 if page == pages[0]:
     st.title("Introduction")
-    st.write(" \
-            Black-out - le mot qui revient dans le discours quotidien de plus en plus souvent.  \n\n Nous constatons \
+    st.write("Black-out - le mot qui revient dans le discours quotidien de plus en plus souvent.") 
+    st.write("Nous constatons \
             une augmentation de la demande énergétique, qui s’est davantage accentuée ces dernières années. \
             La société évolue vers un modèle plus numérique, qui permet une connectivité interpersonnelle avec \
             un niveau de technologie encore jamais atteint dans notre histoire, au prix d'une consommation \
             énergétique toujours plus importante. Une panne d’énergie non-maitrisée pourrait introduire des \
-            perturbations graves au niveau publique comme au niveau individuel.  \n\n \
-            Vous trouverez sur ce site des calculs d'apprentissage automatique qui ont été créés au cours de la \
+            perturbations graves au niveau publique comme au niveau individuel.  \n\n")
+    st.write("Vous trouverez sur ce site des calculs d'apprentissage automatique qui ont été créés au cours de la \
             formation Datascientest January 2023 Bootcamp - Project Group French Energy. Les ensembles de données \
             sur la consommation d'énergie et la production française utilisés proviennent d'Eco2Mix, les données \
-            météorologiques proviennent de Visualcrossing.com.  \n\n \
-            Vous trouverez ci-dessous un aperçu des données énergétiques qui constituent la base de cette étude. \
-            ")
+            météorologiques proviennent de Visualcrossing.com.  \n\n")
+    st.write(""Vous trouverez ci-dessous un aperçu des données énergétiques qui constituent la base de cette étude. \n\n")
+    
     st.image("energie.jpg", use_column_width=True)
      
     st.write("Aggregated dataframe")
