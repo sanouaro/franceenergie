@@ -137,7 +137,7 @@ if page == pages[0]:
             formation Datascientest January 2023 Bootcamp - Project Group French Energy. Les ensembles de données \
             sur la consommation d'énergie et la production française utilisés proviennent d'Eco2Mix, les données \
             météorologiques proviennent de Visualcrossing.com.  \n\n")
-    st.write(""Vous trouverez ci-dessous un aperçu des données énergétiques qui constituent la base de cette étude. \n\n")
+    st.write("Vous trouverez ci-dessous un aperçu des données énergétiques qui constituent la base de cette étude. \n\n")
     
     st.image("energie.jpg", use_column_width=True)
      
